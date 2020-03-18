@@ -34,4 +34,5 @@ java SortCellSize.java
    2. If the outlines are on removable storage, the directory will differ. Example is as follows:
    3. /Volumes/NAME_OF_DRIVE/Subfolder/Outlines
 6. SortCellSize will attempt to locate the outlines and produce 3 folders containing small, medium, and large sized cells.
-   1. If a NullPointerException error message appears in Terminal, the address was incorrect. You can attempt to run the program again by typing java SortCellSize.java into the Terminal.
+   1. If an error message "Could not find directory." appears, an inaccessible or invalid address was entered. You can attempt to run the program again by typing java SortCellSize.java into the Terminal.
+   2. If an error message "An unknown error occured." appears, please let me know.
