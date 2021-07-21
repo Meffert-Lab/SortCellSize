@@ -16,7 +16,7 @@ public class SortCellSize {
       
       Scanner kb = new Scanner(System.in);
       System.out.println("Please enter the directory of an outline folder.");
-      String dirLocus = kb.next();
+      String dirLocus = kb.nextLine();
       
       try {
          File[] defaultDir = new File(dirLocus).listFiles();
