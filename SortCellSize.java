@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.FileOutputStream;
 import java.io.File;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.HashMap;
+import java.util.*;
 
 public class SortCellSize {
    public static void main(String[] args) throws IOException {
-      
       System.out.println("SortCellSize -- sort cells in FQ Outline file by size.");
       System.out.println("Written by Sreenivas Eadara for the Meffert Lab.");
       
@@ -39,10 +39,13 @@ public class SortCellSize {
             if (outlineFile.isFile()) {
                filenames.add(outlineFile.getName());
                String nameOfFile = outlineFile.getName();
+               if (nameOfFile.indexOf("__outline.txt") == -1) {
+                  continue;
+               }
                FileInputStream readOutlineFile = new FileInputStream(outlineFile);
                Scanner fileIn = new Scanner(readOutlineFile);
                ArrayList<String> contents = readInputFile(fileIn);
-               HashMap<Integer, Double> cellAreas = findCellAreas(contents);
+               LinkedHashMap<Integer, Double> cellAreas = findCellAreas(contents);
                createThresholdedOutlines(contents, cellAreas, dirLocus, nameOfFile);
             }
          }
@@ -69,9 +72,9 @@ public class SortCellSize {
       return contents;
    }
    
-   public static HashMap<Integer, Double> findCellAreas(ArrayList<String> contents) {
+   public static LinkedHashMap<Integer, Double> findCellAreas(ArrayList<String> contents) {
       int numCells = 0;
-      HashMap<Integer, Double> cellAreas = new HashMap<Integer, Double>();
+      LinkedHashMap<Integer, Double> cellAreas = new LinkedHashMap<Integer, Double>();
       
       for (int i = 0; i < contents.size(); i++) {
          if (contents.get(i).indexOf("CELL_START") != -1) {
@@ -94,7 +97,7 @@ public class SortCellSize {
       }
       
       System.out.println(numCells);
-      System.out.println(cellAreas);   
+      System.out.println(cellAreas);  
       return cellAreas;
    }
    
@@ -117,22 +120,27 @@ public class SortCellSize {
       return area;
    }
    
-   public static void createThresholdedOutlines(ArrayList<String> contents, HashMap<Integer, Double> cellAreas, String dirLocus, String nameOfFile) throws IOException {
+   public static void createThresholdedOutlines(ArrayList<String> contents, LinkedHashMap<Integer, Double> cellAreas, String dirLocus, String nameOfFile) throws IOException {
       ArrayList<Integer> small = new ArrayList<Integer>();
       ArrayList<Integer> medium = new ArrayList<Integer>();
       ArrayList<Integer> large = new ArrayList<Integer>();
-      
-      for (HashMap.Entry<Integer, Double> cell : cellAreas.entrySet()) {
+      int currentCell = 1;
+      Set<Integer> keys = cellAreas.keySet();
+      for (Integer key : keys) {
          
-         if (cell.getValue() > 40113.43) {
-            large.add(cell.getKey());
+         if (cellAreas.get(key) > 40113.43) {
+            large.add(key);
+            Path moveCellResult = Files.move(Paths.get(dirLocus + "/" + nameOfFile.substring(0, nameOfFile.lastIndexOf("_outline.txt")) + "NUC_EXCLUDE_1_CELL-" + currentCell + ".csv"), Paths.get(dirLocus + "/LARGE/" + nameOfFile.substring(0, nameOfFile.lastIndexOf("_outline.txt")) + "NUC_EXCLUDE_1_CELL-" + currentCell + ".csv"));
          }
          /*else if (cell.getValue() < 15000.0) {
             small.add(cell.getKey());
+            Path moveCellResult = Files.move(Paths.get(dirLocus + "/" + nameOfFile.substring(0, "_outline.txt") + "NUC_EXCLUDE_1_CELL-" + currentCell + ".csv"), Paths.get(dirLocus + "/SMALL/" + nameOfFile.substring(0, "_outline.txt") + "NUC_EXCLUDE_1_CELL-" + currentCell + ".csv"));
          }*/
          else {
-            medium.add(cell.getKey());
+            medium.add(key);
+            Path moveCellResult = Files.move(Paths.get(dirLocus + "/" + nameOfFile.substring(0, nameOfFile.lastIndexOf("_outline.txt")) + "NUC_EXCLUDE_1_CELL-" + currentCell + ".csv"), Paths.get(dirLocus + "/MEDIUM/" + nameOfFile.substring(0, nameOfFile.lastIndexOf("_outline.txt")) + "NUC_EXCLUDE_1_CELL-" + currentCell + ".csv"));
          }
+         currentCell++;
       }
       if (small.size() > 0) {
          makeOutlineFile(contents, small, dirLocus, nameOfFile, "/SMALL/");
